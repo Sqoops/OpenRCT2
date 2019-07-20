@@ -340,11 +340,14 @@ void Park::Update(const Date& date)
         gParkValue = CalculateParkValue();
         gCompanyValue = CalculateCompanyValue();
         gTotalRideValueForMoney = CalculateTotalRideValueForMoney();
+        // When AutomaticRidePricing enabled changes ParkEntranceFee if RidePrices are locked
         if (gCheatsAutomaticRidePricing && !park_ride_prices_unlocked())
         {
-            int nodpmoney = (((int)(gTotalRideValueForMoney / 10)) * 10);
-            gParkEntranceFee = std::clamp<money16>(nodpmoney, MONEY(0, 00), MAX_ENTRANCE_FEE);
+            int noDPmoney = (((int)(gTotalRideValueForMoney / 10)) * 10);
+            money16 minGuestMoney = (((gGuestInitialCash - MONEY(10, 00)) / 10) * 10);
+            gParkEntranceFee = std::clamp<money16>(noDPmoney, MONEY(0, 00), minGuestMoney);
         }
+        // When AutomaticRidePricing enabled automatically changes shop item prices
         if (gCheatsAutomaticRidePricing)
         {
             rct_ride_entry* rideEntry;
@@ -359,20 +362,29 @@ void Park::Update(const Date& date)
                 if (gRideClassifications[ride->type] == RIDE_CLASS_RIDE)
                     continue;
 
+                if (ride->type == RIDE_TYPE_TOILETS)
+                    continue;
+
                 if (gClimateCurrent.Temperature >= 21)
                 {
-                    ride->price = ShopItems[rideEntry->shop_item].HotValue;
-                    ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].HotValue;
+                    if (rideEntry->shop_item != SHOP_ITEM_NONE)
+                        ride->price = ShopItems[rideEntry->shop_item].HotValue;
+                    if (rideEntry->shop_item_secondary != SHOP_ITEM_NONE)
+                        ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].HotValue;
                 }
                 else if (gClimateCurrent.Temperature <= 11)
                 {
-                    ride->price = ShopItems[rideEntry->shop_item].ColdValue;
-                    ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].ColdValue;
+                    if (rideEntry->shop_item != SHOP_ITEM_NONE)
+                        ride->price = ShopItems[rideEntry->shop_item].ColdValue;
+                    if (rideEntry->shop_item_secondary != SHOP_ITEM_NONE)
+                        ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].ColdValue;
                 }
                 else
                 {
-                    ride->price = ShopItems[rideEntry->shop_item].BaseValue;
-                    ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].BaseValue;
+                    if (rideEntry->shop_item != SHOP_ITEM_NONE)
+                        ride->price = ShopItems[rideEntry->shop_item].BaseValue;
+                    if (rideEntry->shop_item_secondary != SHOP_ITEM_NONE)
+                        ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].BaseValue;
                 }
             }
         }
