@@ -29,6 +29,7 @@ extern bool gCheatsFreezeWeather;
 extern bool gCheatsDisableTrainLengthLimit;
 extern bool gCheatsDisablePlantAging;
 extern bool gCheatsDisableRideValueAging;
+extern bool gCheatsAutomaticRidePricing;
 extern bool gCheatsEnableChainLiftOnAllTrack;
 extern bool gCheatsAllowArbitraryRideTypeChanges;
 extern bool gCheatsIgnoreResearchStatus;
@@ -80,7 +81,9 @@ enum class CheatType : int32_t
     NeverEndingMarketing,
     AllowArbitraryRideTypeChanges,
     OwnAllLand,
+    BuildBenches,
     DisableRideValueAging,
+    AutomaticRidePricing,
     IgnoreResearchStatus,
     EnableAllDrawableTrackPieces,
     Count,

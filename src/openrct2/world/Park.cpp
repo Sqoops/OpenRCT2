@@ -34,6 +34,7 @@
 #include "../ride/ShopItem.h"
 #include "../scenario/Scenario.h"
 #include "../windows/Intent.h"
+#include "../world/Climate.h"
 #include "Entrance.h"
 #include "Map.h"
 #include "Sprite.h"
@@ -339,6 +340,42 @@ void Park::Update(const Date& date)
         gParkValue = CalculateParkValue();
         gCompanyValue = CalculateCompanyValue();
         gTotalRideValueForMoney = CalculateTotalRideValueForMoney();
+        if (gCheatsAutomaticRidePricing && !park_ride_prices_unlocked())
+        {
+            int nodpmoney = (((int)(gTotalRideValueForMoney / 10)) * 10);
+            gParkEntranceFee = std::clamp<money16>(nodpmoney, MONEY(0, 00), MAX_ENTRANCE_FEE);
+        }
+        if (gCheatsAutomaticRidePricing)
+        {
+            rct_ride_entry* rideEntry;
+            Ride* ride;
+            int32_t i;
+            FOR_ALL_RIDES (i, ride)
+            {
+                rideEntry = get_ride_entry(ride->subtype);
+                if (rideEntry == nullptr)
+                    continue;
+
+                if (gRideClassifications[ride->type] == RIDE_CLASS_RIDE)
+                    continue;
+
+                if (gClimateCurrent.Temperature >= 21)
+                {
+                    ride->price = ShopItems[rideEntry->shop_item].HotValue;
+                    ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].HotValue;
+                }
+                else if (gClimateCurrent.Temperature <= 11)
+                {
+                    ride->price = ShopItems[rideEntry->shop_item].ColdValue;
+                    ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].ColdValue;
+                }
+                else
+                {
+                    ride->price = ShopItems[rideEntry->shop_item].BaseValue;
+                    ride->price_secondary = ShopItems[rideEntry->shop_item_secondary].BaseValue;
+                }
+            }
+        }
         _suggestedGuestMaximum = CalculateSuggestedMaxGuests();
         _guestGenerationProbability = CalculateGuestGenerationProbability();
 

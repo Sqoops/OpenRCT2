@@ -3965,8 +3965,14 @@ enum
     STR_TRANSPARENT_SCREENSHOT = 6327,
     STR_TRANSPARENT_SCREENSHOT_TIP = 6328,
 
+    STR_CHEAT_AUTOMATIC_RIDE_PRICING = 6329,
+    STR_CHEAT_AUTOMATIC_RIDE_PRICING_TIP = 6330,
+
+    STR_CHEAT_BUILD_BENCHES = 6331,
+    STR_CHEAT_BUILD_BENCHES_TIP = 6332,
+
     // Have to include resource strings (from scenarios and objects) for the time being now that language is partially working
-    STR_COUNT = 32768
+    STR_COUNT = 32772
 };
 
 #endif
