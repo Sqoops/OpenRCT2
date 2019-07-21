@@ -452,6 +452,12 @@ private:
     {
         tile_element_iterator it;
         int random = 0;
+        uint8_t additionBIN = 0;
+        uint8_t additionBENCH = 0;
+        uint8_t additionLAMP = 0;
+        uint8_t additionFOUNTAIN = 0;
+        uint8_t additionQUEUETV = 0;
+        int ranOnce = 0;
 
         tile_element_iterator_begin(&it);
         do
@@ -465,17 +471,41 @@ private:
             footpath_interrupt_peeps(it.x, it.y, it.element->base_height * 8);
             random = util_rand() % 10;
 
+            if (ranOnce == 0)
+            {
+                ranOnce = 1;
+                for (int i = 1; i < 30; i++)
+                {
+                    if (additionBIN == 0 || additionBENCH == 0 || additionLAMP == 0 || additionFOUNTAIN == 0
+                        || additionQUEUETV == 0)
+                    {
+                        it.element->AsPath()->SetAddition(i);
+                        rct_scenery_entry* sceneryEntry = it.element->AsPath()->GetAdditionEntry();
+                        if ((sceneryEntry->path_bit.flags & PATH_BIT_FLAG_IS_BIN) && additionBIN == 0)
+                            additionBIN = i;
+                        if ((sceneryEntry->path_bit.flags & PATH_BIT_FLAG_IS_BENCH) && additionBENCH == 0)
+                            additionBENCH = i;
+                        if ((sceneryEntry->path_bit.flags & PATH_BIT_FLAG_LAMP) && additionLAMP == 0)
+                            additionLAMP = i;
+                        if ((sceneryEntry->path_bit.flags & PATH_BIT_FLAG_JUMPING_FOUNTAIN_WATER) && additionFOUNTAIN == 0)
+                            additionFOUNTAIN = i;
+                        if ((sceneryEntry->path_bit.flags & PATH_BIT_FLAG_IS_QUEUE_SCREEN) && additionQUEUETV == 0)
+                            additionQUEUETV = i;
+                    }
+                }
+            }
+
             if ((it.element)->AsPath()->IsQueue())
             {
                 if (random < 3)
                 {
                     // 30% lamp(2)
-                    it.element->AsPath()->SetAddition(2);
+                    it.element->AsPath()->SetAddition(additionLAMP);
                 }
                 else
                 {
                     // 70% queue tv(6)
-                    it.element->AsPath()->SetAddition(6);
+                    it.element->AsPath()->SetAddition(additionQUEUETV);
                 }
                 it.element->AsPath()->SetAdditionIsGhost(false);
                 it.element->AsPath()->SetIsBroken(false);
@@ -483,10 +513,10 @@ private:
                 continue;
             }
 
-            if (bitcount((it.element)->AsPath()->GetEdges()) == 4)
+            if (bitcount((it.element)->AsPath()->GetEdges()) == 4 && !((it.element)->AsPath()->IsSloped()))
             {
                 // 100% sprinkler(7)
-                it.element->AsPath()->SetAddition(7);
+                it.element->AsPath()->SetAddition(additionFOUNTAIN);
                 it.element->AsPath()->SetAdditionIsGhost(false);
                 it.element->AsPath()->SetIsBroken(false);
                 map_invalidate_tile_full(it.x, it.y);
@@ -498,12 +528,12 @@ private:
                 if (random < 3)
                 {
                     // 30% lamp(2)
-                    it.element->AsPath()->SetAddition(2);
+                    it.element->AsPath()->SetAddition(additionLAMP);
                 }
                 else
                 {
                     // 70% bin(4)
-                    it.element->AsPath()->SetAddition(4);
+                    it.element->AsPath()->SetAddition(additionBIN);
                     it.element->AsPath()->SetAdditionStatus(255);
                 }
             }
@@ -512,25 +542,26 @@ private:
                 if (random < 5)
                 {
                     // 50% bench(1)
-                    it.element->AsPath()->SetAddition(1);
+                    it.element->AsPath()->SetAddition(additionBENCH);
                 }
                 else if (random >= 5 && random < 8)
                 {
                     // 30% bin(4)
-                    it.element->AsPath()->SetAddition(4);
+                    it.element->AsPath()->SetAddition(additionBIN);
                     it.element->AsPath()->SetAdditionStatus(255);
                 }
                 else if (random == 8)
                 {
-                    // 10% lamp(2)
-                    it.element->AsPath()->SetAddition(2);
+                    // 10% sprinkler(7)
+                    it.element->AsPath()->SetAddition(additionFOUNTAIN);
                 }
                 else
                 {
-                    // 10% sprinkler(7)
-                    it.element->AsPath()->SetAddition(7);
+                    // 10% lamp(2)
+                    it.element->AsPath()->SetAddition(additionLAMP);
                 }
             }
+
             it.element->AsPath()->SetAdditionIsGhost(false);
             it.element->AsPath()->SetIsBroken(false);
             map_invalidate_tile_full(it.x, it.y);
